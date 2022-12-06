@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"wxcloudrun-golang/app/service"
-	"wxcloudrun-golang/pkg/db"
+	"wxcloudrun-golang/internal/app/service"
+	"wxcloudrun-golang/internal/pkg/db"
 
 	"github.com/gin-gonic/gin"
 )

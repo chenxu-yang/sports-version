@@ -1,7 +1,7 @@
 package service
 
 import (
-	"wxcloudrun-golang/app/auth"
+	"wxcloudrun-golang/internal/app/auth"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
