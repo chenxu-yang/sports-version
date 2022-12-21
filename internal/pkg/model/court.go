@@ -3,10 +3,12 @@ package model
 import "wxcloudrun-golang/internal/pkg/db"
 
 type Court struct {
-	ID       int32
-	Name     string
-	Location string
-	Info     string
+	ID        int32  `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	Name      string `gorm:"column:name;type:varchar(255);not null;default:'';comment:'场馆名称'"`
+	Latitude  int32  `gorm:"column:latitude;type:int(11);not null;default:0;comment:'纬度'"`
+	Longitude int32  `gorm:"column:longitude;type:int(11);not null;default:0;comment:'经度'"`
+	PicURL    string `gorm:"column:pic_url;type:varchar(255);not null;default:'';comment:'场馆图片'"`
+	Info      string `gorm:"column:info;type:varchar(255);not null;default:'';comment:'场馆简介'"`
 }
 
 // TableName get sql table name.获取数据库名字
@@ -43,4 +45,11 @@ func (obj *Court) Update(count *Court) (*Court, error) {
 // Delete 删除
 func (obj *Court) Delete(count *Court) error {
 	return db.Get().Delete(count, "id = ?", count.ID).Error
+}
+
+// GetsGetsWithLimit 获取批量结果
+func (obj *Court) GetsWithLimit(count *Court, limit int32) ([]Court, error) {
+	results := make([]Court, 0)
+	err := db.Get().Table(obj.TableName()).Where(count).Limit(int(limit)).Find(&results).Error
+	return results, err
 }

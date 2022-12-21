@@ -6,13 +6,14 @@ import (
 )
 
 type Event struct {
-	ID          int32
-	UserOpenID  int32
-	CourtID     int32
-	StartTime   time.Time
-	EndTime     time.Time
-	CreatedTime time.Time
-	UpdatedTime time.Time
+	ID          int32     `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	OpenID      int32     `json:"open_id" gorm:"column:open_id;type:int(11);not null;default:0;comment:'用户id'"`
+	CourtID     int32     `json:"court_id" gorm:"column:court_id;type:int(11);not null;default:0;comment:'场馆id'"`
+	Date        string    `json:"date" gorm:"column:date;type:varchar(255);not null;default:'';comment:'日期'"`
+	StartTime   time.Time `json:"start_time" gorm:"column:start_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:'开始时间'"`
+	EndTime     time.Time `json:"end_time" gorm:"column:end_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:'结束时间'"`
+	CreatedTime time.Time `json:"created_time" gorm:"column:created_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:'创建时间'"`
+	UpdatedTime time.Time `json:"updated_time" gorm:"column:updated_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:'更新时间'"`
 }
 
 // TableName get sql table name.获取数据库名字
@@ -34,9 +35,9 @@ func (obj *Event) Get(event *Event) (*Event, error) {
 }
 
 // Gets 获取批量结果
-func (obj *Event) Gets(event *Event) ([]Event, error) {
+func (obj *Event) GetsByDesc(event *Event) ([]Event, error) {
 	results := make([]Event, 0)
-	err := db.Get().Table(obj.TableName()).Where(event).Find(&results).Error
+	err := db.Get().Table(obj.TableName()).Where(event).Find(&results).Order("start_time desc").Error
 	return results, err
 }
 

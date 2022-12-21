@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"crypto/md5"
@@ -10,6 +10,13 @@ import (
 	"os"
 )
 
+type Service struct {
+}
+
+func NewService() *Service {
+	return &Service{}
+}
+
 type WXLoginResp struct {
 	OpenId     string `json:"openid"`
 	SessionKey string `json:"session_key"`
@@ -18,7 +25,7 @@ type WXLoginResp struct {
 	ErrMsg     string `json:"errmsg"`
 }
 
-func WXLogin(code string) (*WXLoginResp, error) {
+func (s *Service) WXLogin(code string) (*WXLoginResp, error) {
 	url := "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code"
 	appId := os.Getenv("APPID")
 	secret := os.Getenv("APPSECRET")
@@ -41,7 +48,7 @@ func WXLogin(code string) (*WXLoginResp, error) {
 
 	// 判断微信接口返回的是否是一个异常情况
 	if wxResp.ErrCode != 0 {
-		return nil, errors.New(fmt.Sprintf("ErrCode:%s  ErrMsg:%s", wxResp.ErrCode, wxResp.ErrMsg))
+		return nil, errors.New(fmt.Sprintf("ErrCode:%d  ErrMsg:%s", wxResp.ErrCode, wxResp.ErrMsg))
 	}
 
 	return &wxResp, nil
