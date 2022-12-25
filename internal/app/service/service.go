@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"wxcloudrun-golang/internal/app/collect"
 	"wxcloudrun-golang/internal/app/court"
 	"wxcloudrun-golang/internal/app/event"
 	"wxcloudrun-golang/internal/app/user"
-	"wxcloudrun-golang/internal/app/video"
 	"wxcloudrun-golang/internal/pkg/model"
 	"wxcloudrun-golang/internal/pkg/resp"
 
@@ -17,10 +17,10 @@ import (
 )
 
 type Service struct {
-	UserService  *user.Service
-	CourtService *court.Service
-	EventService *event.Service
-	VideoService *video.Service
+	UserService    *user.Service
+	CourtService   *court.Service
+	EventService   *event.Service
+	CollectService *collect.Service
 }
 
 func NewService() *Service {
@@ -31,7 +31,7 @@ func NewService() *Service {
 	}
 }
 
-// /wechat/applet_login?code=xxx [get]  路由
+// WeChatLogin /wechat/applet_login?code=xxx [get]  路由
 // 微信小程序登录
 func (s *Service) WeChatLogin(c *gin.Context) {
 	code := c.Query("code") //  获取code
@@ -56,13 +56,13 @@ func (s *Service) StartEvent(c *gin.Context) {
 	userOpenIDString := c.Request.Header["X-WX-OPENID"]
 	openID, _ := strconv.Atoi(userOpenIDString[0])
 	body, _ := ioutil.ReadAll(c.Request.Body)
-	event := &model.Event{}
-	err := json.Unmarshal(body, event)
+	newEvent := &model.Event{}
+	err := json.Unmarshal(body, newEvent)
 	if err != nil {
 		c.JSON(400, err.Error())
 		return
 	}
-	newEvent, err := s.EventService.CreateEvent(int32(openID), event.CourtID, event.StartTime, event.EndTime)
+	newEvent, err = s.EventService.CreateEvent(int32(openID), newEvent.CourtID, newEvent.StartTime, newEvent.EndTime)
 	if err != nil {
 		c.JSON(500, err.Error())
 		return
@@ -72,25 +72,12 @@ func (s *Service) StartEvent(c *gin.Context) {
 
 // 主页面相关
 
-// 获取推荐视频
-func (s *Service) GetRecommendVideos(c *gin.Context) {
-	limit := c.Query("limit")
-	limitInt, _ := strconv.Atoi(limit)
-	videos, err := s.VideoService.GetByDescRank(int32(limitInt))
-	if err != nil {
-		c.JSON(500, err.Error())
-		return
-	}
-	c.JSON(200, resp.ToStruct(videos, err))
-}
-
-// 收藏视频
-func (s *Service) CollectVideo(c *gin.Context) {
+// ToggleCollectVideo 收藏视频
+func (s *Service) ToggleCollectVideo(c *gin.Context) {
 	userOpenIDString := c.Request.Header["X-WX-OPENID"]
 	openID, _ := strconv.Atoi(userOpenIDString[0])
-	videoID := c.Query("videoID")
-	videoIDInt, _ := strconv.Atoi(videoID)
-	collectRecord, err := s.VideoService.CollectVideo(&model.Collect{OpenId: int32(openID), VideoId: int32(videoIDInt)})
+	videoID := c.Query("fileID")
+	collectRecord, err := s.CollectService.ToggleCollectVideo(int32(openID), videoID)
 	if err != nil {
 		c.JSON(500, err.Error())
 		return
@@ -98,11 +85,9 @@ func (s *Service) CollectVideo(c *gin.Context) {
 	c.JSON(200, resp.ToStruct(collectRecord, err))
 }
 
-// 获取场地, TODO(按位置排序)
+// GetCounts 获取场地, TODO(按位置排序)
 func (s *Service) GetCounts(c *gin.Context) {
-	limit := c.Query("limit")
-	limitInt, _ := strconv.Atoi(limit)
-	counts, err := s.CourtService.GetCourtsWithLimit(int32(limitInt))
+	counts, err := s.CourtService.GetCourts()
 	if err != nil {
 		c.JSON(500, err.Error())
 		return
@@ -121,7 +106,7 @@ func (s *Service) GetCountInfo(c *gin.Context) {
 	c.JSON(200, resp.ToStruct(countInfo, err))
 }
 
-// 获取用户所属事件的视频
+// GetEventVideos 获取用户所属事件的视频
 func (s *Service) GetEventVideos(c *gin.Context) {
 	userOpenIDString := c.Request.Header["X-WX-OPENID"]
 	openID, _ := strconv.Atoi(userOpenIDString[0])
@@ -130,25 +115,32 @@ func (s *Service) GetEventVideos(c *gin.Context) {
 		c.JSON(500, err.Error())
 		return
 	}
-	url := []string{}
-	for _, event := range events {
-		url = append(url, fmt.Sprintf("%d%s%s", event.CourtID, event.StartTime, event.StartTime))
+	var results []event.EventRepos
+	for _, e := range events {
+		var repos []string
+		startTime := e.StartTime
+		for startTime <= e.EndTime {
+			repos = append(repos, fmt.Sprintf("%d/%d/%d", e.CourtID, e.Date, e.StartTime))
+			if startTime%100 != 0 {
+				startTime += 100
+				startTime -= 30
+			} else {
+				startTime += 30
+			}
+		}
+		results = append(results, event.EventRepos{Event: e, Repos: repos})
 	}
-	c.JSON(200, resp.ToStruct(url, err))
+	c.JSON(200, resp.ToStruct(results, err))
 }
 
-// 获取用户收藏的视频
+// GetCollectVideos 获取用户收藏的视频
 func (s *Service) GetCollectVideos(c *gin.Context) {
 	userOpenIDString := c.Request.Header["X-WX-OPENID"]
 	openID, _ := strconv.Atoi(userOpenIDString[0])
-	collects, err := s.VideoService.GetCollectByUser(int32(openID))
+	collects, err := s.CollectService.GetCollectByUser(int32(openID))
 	if err != nil {
 		c.JSON(500, err.Error())
 		return
 	}
-	url := []string{}
-	for _, collect := range collects {
-		url = s.VideoService.GetVideoUrl(collect.VideoId)
-	}
-	c.JSON(200, resp.ToStruct(url, err))
+	c.JSON(200, resp.ToStruct(collects, err))
 }

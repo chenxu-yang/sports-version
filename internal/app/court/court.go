@@ -14,8 +14,8 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) GetCourtsWithLimit(limit int32) ([]model.Court, error) {
-	results, err := s.courtDao.GetsWithLimit(&model.Court{}, limit)
+func (s *Service) GetCourts() ([]model.Court, error) {
+	results, err := s.courtDao.Gets(&model.Court{})
 	if err != nil {
 		return nil, err
 	}

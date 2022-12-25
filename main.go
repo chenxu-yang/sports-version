@@ -18,5 +18,14 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/auth/login", service.WeChatLogin)
+	router.GET("/court", service.GetCounts)
+	router.GET("/court/:id", service.GetCountInfo)
+
+	router.POST("/event", service.StartEvent)
+	router.POST("/collect/:fileID", service.ToggleCollectVideo)
+	router.GET("/collect/:openID", service.GetCollectVideos)
+
+	router.GET("/event/user", service.GetEventVideos)
+
 	log.Fatal(http.ListenAndServe(":80", nil))
 }
