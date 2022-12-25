@@ -23,7 +23,7 @@ func main() {
 
 	router.POST("/event", service.StartEvent)
 	router.POST("/collect/:fileID", service.ToggleCollectVideo)
-	router.GET("/collect/:openID", service.GetCollectVideos)
+	router.GET("/collect/user", service.GetCollectVideos)
 
 	router.GET("/event/user", service.GetEventVideos)
 
