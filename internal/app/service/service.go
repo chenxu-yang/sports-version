@@ -25,9 +25,10 @@ type Service struct {
 
 func NewService() *Service {
 	return &Service{
-		UserService:  user.NewService(),
-		CourtService: court.NewService(),
-		EventService: event.NewService(),
+		UserService:    user.NewService(),
+		CourtService:   court.NewService(),
+		EventService:   event.NewService(),
+		CollectService: collect.NewService(),
 	}
 }
 
@@ -53,8 +54,8 @@ func (s *Service) WeChatLogin(c *gin.Context) {
 }
 
 func (s *Service) StartEvent(c *gin.Context) {
-	userOpenIDString := c.Request.Header["X-WX-OPENID"]
-	openID, _ := strconv.Atoi(userOpenIDString[0])
+	userOpenIDString := c.GetHeader("X-WX-OPENID")
+	openID, _ := strconv.Atoi(userOpenIDString)
 	body, _ := ioutil.ReadAll(c.Request.Body)
 	newEvent := &model.Event{}
 	err := json.Unmarshal(body, newEvent)
@@ -62,7 +63,8 @@ func (s *Service) StartEvent(c *gin.Context) {
 		c.JSON(400, err.Error())
 		return
 	}
-	newEvent, err = s.EventService.CreateEvent(int32(openID), newEvent.CourtID, newEvent.StartTime, newEvent.EndTime)
+	newEvent, err = s.EventService.CreateEvent(int32(openID), newEvent.CourtID, newEvent.Date, newEvent.StartTime,
+		newEvent.EndTime)
 	if err != nil {
 		c.JSON(500, err.Error())
 		return
@@ -74,9 +76,10 @@ func (s *Service) StartEvent(c *gin.Context) {
 
 // ToggleCollectVideo 收藏视频
 func (s *Service) ToggleCollectVideo(c *gin.Context) {
-	userOpenIDString := c.Request.Header["X-WX-OPENID"]
-	openID, _ := strconv.Atoi(userOpenIDString[0])
-	videoID := c.Query("fileID")
+	userOpenIDString := c.GetHeader("X-WX-OPENID")
+	openID, _ := strconv.Atoi(userOpenIDString)
+	videoID := c.Param("fileID")
+	fmt.Println(videoID)
 	collectRecord, err := s.CollectService.ToggleCollectVideo(int32(openID), videoID)
 	if err != nil {
 		c.JSON(500, err.Error())
@@ -96,7 +99,7 @@ func (s *Service) GetCounts(c *gin.Context) {
 }
 
 func (s *Service) GetCountInfo(c *gin.Context) {
-	countID := c.Query("countID")
+	countID := c.Param("id")
 	countIDInt, _ := strconv.Atoi(countID)
 	countInfo, err := s.CourtService.GetCountInfo(int32(countIDInt))
 	if err != nil {
@@ -108,8 +111,8 @@ func (s *Service) GetCountInfo(c *gin.Context) {
 
 // GetEventVideos 获取用户所属事件的视频
 func (s *Service) GetEventVideos(c *gin.Context) {
-	userOpenIDString := c.Request.Header["X-WX-OPENID"]
-	openID, _ := strconv.Atoi(userOpenIDString[0])
+	userOpenIDString := c.GetHeader("X-WX-OPENID")
+	openID, _ := strconv.Atoi(userOpenIDString)
 	events, err := s.EventService.GetEventsByUser(int32(openID))
 	if err != nil {
 		c.JSON(500, err.Error())
@@ -135,8 +138,8 @@ func (s *Service) GetEventVideos(c *gin.Context) {
 
 // GetCollectVideos 获取用户收藏的视频
 func (s *Service) GetCollectVideos(c *gin.Context) {
-	userOpenIDString := c.Request.Header["X-WX-OPENID"]
-	openID, _ := strconv.Atoi(userOpenIDString[0])
+	userOpenIDString := c.GetHeader("X-WX-OPENID")
+	openID, _ := strconv.Atoi(userOpenIDString)
 	collects, err := s.CollectService.GetCollectByUser(int32(openID))
 	if err != nil {
 		c.JSON(500, err.Error())

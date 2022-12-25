@@ -21,11 +21,12 @@ type EventRepos struct {
 	Repos []string
 }
 
-func (s *Service) CreateEvent(userOpenID, courtID int32, startTime, endTime int32) (*model.Event, error) {
+func (s *Service) CreateEvent(userOpenID, courtID int32, date, startTime, endTime int32) (*model.Event, error) {
 	// create event
 	event, err := s.EventDao.Create(&model.Event{
 		OpenID:      userOpenID,
 		CourtID:     courtID,
+		Date:        date,
 		StartTime:   startTime,
 		EndTime:     endTime,
 		CreatedTime: time.Now(),

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"wxcloudrun-golang/internal/app/service"
 	"wxcloudrun-golang/internal/pkg/db"
 
@@ -16,6 +15,11 @@ func main() {
 	}
 	service := service.NewService()
 	router := gin.Default()
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
 	router.GET("/auth/login", service.WeChatLogin)
 	router.GET("/court", service.GetCounts)
@@ -27,5 +31,5 @@ func main() {
 
 	router.GET("/event/user", service.GetEventVideos)
 
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(router.Run())
 }
