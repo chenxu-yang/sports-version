@@ -15,21 +15,15 @@ func main() {
 	}
 	service := service.NewService()
 	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
 	router.GET("/auth/login", service.WeChatLogin)
-	router.GET("/court", service.GetCounts)
-	router.GET("/court/:id", service.GetCountInfo)
+	router.GET("/courts", service.GetCounts)
+	router.GET("/courts/:id", service.GetCountInfo)
 
-	router.POST("/event", service.StartEvent)
-	router.POST("/collect/:fileID", service.ToggleCollectVideo)
-	router.GET("/collect/user", service.GetCollectVideos)
+	router.POST("/events", service.StartEvent)
+	router.POST("/collects/:fileID", service.ToggleCollectVideo)
+	router.GET("/user/collects", service.GetCollectVideos)
 
-	router.GET("/event/user", service.GetEventVideos)
+	router.GET("/user/events", service.GetEventVideos)
 
 	log.Fatal(router.Run())
 }
