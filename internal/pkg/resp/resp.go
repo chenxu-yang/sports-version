@@ -1,22 +1,22 @@
 package resp
 
 type Resp struct {
-	code int32
-	msg  string
-	data interface{}
+	Code int32       `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
 }
 
 func ToStruct(data interface{}, err error) *Resp {
 	if err == nil {
 		return &Resp{
-			code: 0,
-			msg:  "success",
-			data: data,
+			Code: 0,
+			Msg:  "success",
+			Data: data,
 		}
 	}
 	return &Resp{
-		code: -1,
-		msg:  err.Error(),
-		data: nil,
+		Code: -1,
+		Msg:  err.Error(),
+		Data: nil,
 	}
 }

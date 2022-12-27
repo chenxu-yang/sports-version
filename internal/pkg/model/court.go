@@ -4,11 +4,11 @@ import "wxcloudrun-golang/internal/pkg/db"
 
 type Court struct {
 	ID        int32  `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
-	Name      string `gorm:"column:name;type:varchar(255);not null;default:'';comment:'场馆名称'"`
-	Latitude  int32  `gorm:"column:latitude;type:int(11);not null;default:0;comment:'纬度'"`
-	Longitude int32  `gorm:"column:longitude;type:int(11);not null;default:0;comment:'经度'"`
-	PicURL    string `gorm:"column:pic_url;type:varchar(255);not null;default:'';comment:'场馆图片'"`
-	Info      string `gorm:"column:info;type:varchar(255);not null;default:'';comment:'场馆简介'"`
+	Name      string `json:"name" gorm:"column:name;type:varchar(255);not null;default:'';comment:'场馆名称'"`
+	Latitude  int32  `json:"latitude" gorm:"column:latitude;type:int(11);not null;default:0;comment:'纬度'"`
+	Longitude int32  `json:"longitude" gorm:"column:longitude;type:int(11);not null;default:0;comment:'经度'"`
+	PicURL    string `json:"pic_url" gorm:"column:pic_url;type:varchar(255);not null;default:'';comment:'场馆图片'"`
+	Info      string `json:"info" gorm:"column:info;type:varchar(255);not null;default:'';comment:'场馆简介'"`
 }
 
 // TableName get sql table name.获取数据库名字
