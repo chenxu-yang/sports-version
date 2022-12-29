@@ -27,10 +27,11 @@ type Service struct {
 
 func NewService() *Service {
 	return &Service{
-		UserService:    user.NewService(),
-		CourtService:   court.NewService(),
-		EventService:   event.NewService(),
-		CollectService: collect.NewService(),
+		UserService:      user.NewService(),
+		CourtService:     court.NewService(),
+		EventService:     event.NewService(),
+		CollectService:   collect.NewService(),
+		RecommendService: recommend.NewService(),
 	}
 }
 
