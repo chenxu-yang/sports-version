@@ -8,6 +8,7 @@ import (
 	"wxcloudrun-golang/internal/app/collect"
 	"wxcloudrun-golang/internal/app/court"
 	"wxcloudrun-golang/internal/app/event"
+	"wxcloudrun-golang/internal/app/recommend"
 	"wxcloudrun-golang/internal/app/user"
 	"wxcloudrun-golang/internal/pkg/model"
 	"wxcloudrun-golang/internal/pkg/resp"
@@ -17,10 +18,11 @@ import (
 )
 
 type Service struct {
-	UserService    *user.Service
-	CourtService   *court.Service
-	EventService   *event.Service
-	CollectService *collect.Service
+	UserService      *user.Service
+	CourtService     *court.Service
+	EventService     *event.Service
+	CollectService   *collect.Service
+	RecommendService *recommend.Service
 }
 
 func NewService() *Service {
@@ -146,4 +148,14 @@ func (s *Service) GetCollectVideos(c *gin.Context) {
 		return
 	}
 	c.JSON(200, resp.ToStruct(collects, err))
+}
+
+// GetRecommendVideos 获取推荐视频
+func (s *Service) GetRecommendVideos(c *gin.Context) {
+	videos, err := s.RecommendService.GetRecommend()
+	if err != nil {
+		c.JSON(500, err.Error())
+		return
+	}
+	c.JSON(200, resp.ToStruct(videos, err))
 }
